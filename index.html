@@ -1,0 +1,184 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101116">
+<title>Cinema Archive | أرشيف السينما</title>
+<style>
+:root {
+  --bg:#101116; --panel:#1a1c24; --gold:#d9b875;
+  --text:#f5f3ee; --muted:#a6a7b0; --border:#30313b;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+header{padding:24px 5%;border-bottom:1px solid var(--border);
+background:#14151b}
+.brand{color:var(--gold);font-size:26px;font-weight:800}
+.subtitle{color:var(--muted);font-size:13px;margin-top:5px}
+.hero{padding:45px 5% 30px;
+background:linear-gradient(120deg,#29251f,#15161d 65%,#101116)}
+.hero h1{font-size:clamp(25px,5vw,42px);margin:0 0 12px}
+.hero p{color:#c1c0c0;line-height:1.9;max-width:600px}
+main{padding:24px 5% 50px;max-width:1400px;margin:auto}
+.filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+gap:10px;margin-bottom:20px}
+input,select{width:100%;padding:13px 11px;background:var(--panel);
+color:var(--text);border:1px solid var(--border);border-radius:9px;
+font:inherit;min-width:0}
+input::placeholder{color:var(--muted)}
+input:focus,select:focus{outline:1px solid var(--gold)}
+.section-title{display:flex;justify-content:space-between;
+align-items:center;gap:12px;margin:24px 0 16px}
+.section-title h2{font-size:20px;margin:0}
+#count{font-size:12px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.card{background:var(--panel);border:1px solid var(--border);
+border-radius:12px;overflow:hidden;min-width:0}
+.poster{height:190px;background:linear-gradient(145deg,#34313b,#171820);
+display:flex;align-items:center;justify-content:center;
+font-size:48px;color:var(--gold)}
+.card-body{padding:13px}
+.card h3{font-size:16px;margin:0 0 8px;line-height:1.6}
+.meta{font-size:12px;color:var(--muted);line-height:1.9}
+.tag{display:inline-block;color:var(--gold);font-size:11px;
+border:1px solid #615239;padding:3px 7px;border-radius:20px;margin-top:8px}
+.notice{background:#191a21;color:var(--muted);padding:14px;
+border-radius:10px;margin-top:24px;font-size:12px;line-height:1.9}
+footer{text-align:center;color:var(--muted);padding:24px;
+border-top:1px solid var(--border);font-size:12px}
+@media(max-width:760px){
+ .filters{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .poster{height:155px}
+ .hero{padding-top:32px}
+}
+@media(max-width:360px){
+ .filters{grid-template-columns:1fr}
+ .poster{height:130px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">CINEMA ARCHIVE</div>
+  <div class="subtitle">أرشيف السينما والأعمال الخالدة</div>
+</header>
+
+<section class="hero">
+  <h1>لكل فيلم حكاية… ولكل حقبة روائعها</h1>
+  <p>اكتشف عوالم السينما، من الكلاسيكيات القديمة إلى أحدث الإنتاجات.
+  ابحث وصنّف أعمالك المفضلة في مكتبة واحدة.</p>
+</section>
+
+<main>
+  <div class="filters">
+    <input id="search" placeholder="ابحث عن فيلم أو مسلسل..." aria-label="البحث">
+    <select id="type" aria-label="نوع العمل">
+      <option value="">كل أنواع الأعمال</option>
+      <option value="فيلم">أفلام</option>
+      <option value="مسلسل">مسلسلات</option>
+      <option value="أنمي">أنمي</option>
+      <option value="وثائقي">وثائقي</option>
+    </select>
+    <select id="genre" aria-label="التصنيف">
+      <option value="">كل التصنيفات</option>
+      <option>دراما</option><option>مغامرة</option>
+      <option>خيال علمي</option><option>فانتازيا</option>
+      <option>رعب</option><option>أكشن</option>
+      <option>جريمة</option><option>رسوم متحركة</option>
+    </select>
+    <select id="year" aria-label="سنة الإصدار">
+      <option value="">كل السنوات</option>
+      <option value="old">قبل 1950</option>
+      <option value="1950-1979">1950–1979</option>
+      <option value="1980-1999">1980–1999</option>
+      <option value="2000-2019">2000–2019</option>
+      <option value="2020-2026">2020–2026</option>
+    </select>
+    <select id="sort" aria-label="ترتيب النتائج">
+      <option value="new">الأحدث أولًا</option>
+      <option value="old">الأقدم أولًا</option>
+      <option value="az">الاسم: أ إلى ي</option>
+      <option value="rating">الأعلى تقييمًا</option>
+    </select>
+  </div>
+
+  <div class="section-title">
+    <h2>اكتشف مكتبة الأعمال</h2>
+    <span id="count"></span>
+  </div>
+  <div class="grid" id="movies"></div>
+  <div class="notice" id="notice">
+    هذه نسخة أولية ببيانات تجريبية. لم يتم ربط قواعد بيانات الأفلام الخارجية بعد،
+    ولا تمثل البطاقات روابط مشاهدة فعلية.
+  </div>
+</main>
+
+<footer> CINEMA ARCHIVE · مكتبتك السينمائية الخاصة </footer>
+
+<script>
+const works = [
+ {title:"رحلة إلى القمر",en:"A Trip to the Moon",year:1902,type:"فيلم",genre:"خيال علمي",rating:8.0,icon:"🌙"},
+ {title:"نوسفيراتو",en:"Nosferatu",year:1922,type:"فيلم",genre:"رعب",rating:7.8,icon:"🦇"},
+ {title:"متروبوليس",en:"Metropolis",year:1927,type:"فيلم",genre:"خيال علمي",rating:8.3,icon:"🏙️"},
+ {title:"أضواء المدينة",en:"City Lights",year:1931,type:"فيلم",genre:"دراما",rating:8.5,icon:"🎩"},
+ {title:"الأزمنة الحديثة",en:"Modern Times",year:1936,type:"فيلم",genre:"كوميديا",rating:8.5,icon:"🎞️"},
+ {title:"المواطن كين",en:"Citizen Kane",year:1941,type:"فيلم",genre:"دراما",rating:8.3,icon:"🎬"},
+ {title:"كازابلانكا",en:"Casablanca",year:1942,type:"فيلم",genre:"دراما",rating:8.5,icon:"🌹"},
+ {title:"السارقون للدراجات",en:"Bicycle Thieves",year:1948,type:"فيلم",genre:"دراما",rating:8.3,icon:"🚲"},
+ {title:"الساموراي السبعة",en:"Seven Samurai",year:1954,type:"فيلم",genre:"مغامرة",rating:8.6,icon:"⚔️"},
+ {title:"لورنس العرب",en:"Lawrence of Arabia",year:1962,type:"فيلم",genre:"مغامرة",rating:8.3,icon:"🏜️"},
+ {title:"الطيب والشرس والقبيح",en:"The Good, the Bad and the Ugly",year:1966,type:"فيلم",genre:"مغامرة",rating:8.8,icon:"🤠"},
+ {title:"العراب",en:"The Godfather",year:1972,type:"فيلم",genre:"جريمة",rating:9.2,icon:"🎩"},
+ {title:"حرب النجوم",en:"Star Wars",year:1977,type:"فيلم",genre:"خيال علمي",rating:8.6,icon:"🚀"},
+ {title:"بليد رانر",en:"Blade Runner",year:1982,type:"فيلم",genre:"خيال علمي",rating:8.1,icon:"🌃"},
+ {title:"العودة إلى المستقبل",en:"Back to the Future",year:1985,type:"فيلم",genre:"خيال علمي",rating:8.5,icon:"⏳"},
+ {title:"أمير الظلام",en:"Princess Mononoke",year:1997,type:"أنمي",genre:"فانتازيا",rating:8.3,icon:"🐺"},
+ {title:"الماتريكس",en:"The Matrix",year:1999,type:"فيلم",genre:"خيال علمي",rating:8.7,icon:"🟩"},
+ {title:"سيد الخواتم",en:"The Lord of the Rings",year:2001,type:"فيلم",genre:"فانتازيا",rating:8.9,icon:"💍"},
+ {title:"فارس الظلام",en:"The Dark Knight",year:2008,type:"فيلم",genre:"أكشن",rating:9.0,icon:"🦇"},
+ {title:"هجوم العمالقة",en:"Attack on Titan",year:2013,type:"أنمي",genre:"أكشن",rating:9.0,icon:"⚔️"},
+ {title:"بين النجوم",en:"Interstellar",year:2014,type:"فيلم",genre:"خيال علمي",rating:8.7,icon:"🪐"},
+ {title:"لعبة العروش",en:"Game of Thrones",year:2011,type:"مسلسل",genre:"فانتازيا",rating:9.2,icon:"🐉"},
+ {title:"الكثيب",en:"Dune",year:2021,type:"فيلم",genre:"خيال علمي",rating:8.0,icon:"🏜️"},
+ {title:"أوبنهايمر",en:"Oppenheimer",year:2023,type:"فيلم",genre:"دراما",rating:8.3,icon:"⚛️"}
+];
+
+const $ = id => document.getElementById(id);
+function render(){
+ const q=$("search").value.trim().toLowerCase();
+ const type=$("type").value, genre=$("genre").value, year=$("year").value;
+ let list=works.filter(w=>{
+  const matchText=(w.title+" "+w.en).toLowerCase().includes(q);
+  const matchType=!type||w.type===type;
+  const matchGenre=!genre||w.genre===genre;
+  let matchYear=true;
+  if(year==="old") matchYear=w.year<1950;
+  else if(year){const [a,b]=year.split("-").map(Number);matchYear=w.year>=a&&w.year<=b;}
+  return matchText&&matchType&&matchGenre&&matchYear;
+ });
+ const sort=$("sort").value;
+ if(sort==="new")list.sort((a,b)=>b.year-a.year);
+ if(sort==="old")list.sort((a,b)=>a.year-b.year);
+ if(sort==="az")list.sort((a,b)=>a.title.localeCompare(b.title,"ar"));
+ if(sort==="rating")list.sort((a,b)=>b.rating-a.rating);
+ $("count").textContent=list.length+" عمل";
+ $("movies").innerHTML=list.map(w=>`
+  <article class="card">
+   <div class="poster" aria-hidden="true">${w.icon}</div>
+   <div class="card-body">
+    <h3>${w.title}</h3>
+    <div class="meta">${w.en}<br>${w.year} · ${w.type}<br>التقييم التجريبي: ${w.rating}</div>
+    <span class="tag">${w.genre}</span>
+   </div>
+  </article>`).join("");
+ if(!list.length)$("movies").innerHTML='<p>لا توجد نتائج مطابقة. جرّب تغيير الفلاتر.</p>';
+}
+["search","type","genre","year","sort"].forEach(id=>$(id).addEventListener(id==="search"?"input":"change",render));
+render();
+</script>
+</body>
+</html>
