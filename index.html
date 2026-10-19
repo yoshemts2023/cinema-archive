@@ -147,38 +147,130 @@ const works = [
  {title:"أوبنهايمر",en:"Oppenheimer",year:2023,type:"فيلم",genre:"دراما",rating:8.3,icon:"⚛️"}
 ];
 
+
 const $ = id => document.getElementById(id);
-function render(){
- const q=$("search").value.trim().toLowerCase();
- const type=$("type").value, genre=$("genre").value, year=$("year").value;
- let list=works.filter(w=>{
-  const matchText=(w.title+" "+w.en).toLowerCase().includes(q);
-  const matchType=!type||w.type===type;
-  const matchGenre=!genre||w.genre===genre;
-  let matchYear=true;
-  if(year==="old") matchYear=w.year<1950;
-  else if(year){const [a,b]=year.split("-").map(Number);matchYear=w.year>=a&&w.year<=b;}
-  return matchText&&matchType&&matchGenre&&matchYear;
- });
- const sort=$("sort").value;
- if(sort==="new")list.sort((a,b)=>b.year-a.year);
- if(sort==="old")list.sort((a,b)=>a.year-b.year);
- if(sort==="az")list.sort((a,b)=>a.title.localeCompare(b.title,"ar"));
- if(sort==="rating")list.sort((a,b)=>b.rating-a.rating);
- $("count").textContent=list.length+" عمل";
- $("movies").innerHTML=list.map(w=>`
-  <article class="card">
-   <div class="poster" aria-hidden="true">${w.icon}</div>
-   <div class="card-body">
-    <h3>${w.title}</h3>
-    <div class="meta">${w.en}<br>${w.year} · ${w.type}<br>التقييم التجريبي: ${w.rating}</div>
-    <span class="tag">${w.genre}</span>
-   </div>
-  </article>`).join("");
- if(!list.length)$("movies").innerHTML='<p>لا توجد نتائج مطابقة. جرّب تغيير الفلاتر.</p>';
+
+const API_URL = "https://flat-credit-f474cinema-archive-api.yoshemts2023.workers.dev/api/search";
+
+let searchTimer;
+let searchRequest = 0;
+
+function renderCards(list) {
+  const sort = $("sort").value;
+
+  if (sort === "new") list.sort((a, b) => b.year - a.year);
+  if (sort === "old") list.sort((a, b) => a.year - b.year);
+  if (sort === "az") list.sort((a, b) => a.title.localeCompare(b.title, "ar"));
+  if (sort === "rating") list.sort((a, b) => b.rating - a.rating);
+
+  $("count").textContent = list.length + " عمل";
+
+  $("movies").innerHTML = list.map(w => `
+    <article class="card">
+      <div class="poster" aria-hidden="true">${w.icon || "🎬"}</div>
+      <div class="card-body">
+        <h3>${w.title}</h3>
+        <div class="meta">${w.en || ""}
+          <br>${w.year || "غير معروف"} · ${w.type}
+          <br>التقييم: ${Number(w.rating || 0).toFixed(1)}
+        </div>
+        <span class="tag">${w.genre || "غير مصنف"}</span>
+      </div>
+    </article>
+  `).join("");
+
+  if (!list.length) {
+    $("movies").innerHTML =
+      '<p>لا توجد نتائج مطابقة. جرّب تغيير الفلاتر.</p>';
+  }
 }
-["search","type","genre","year","sort"].forEach(id=>$(id).addEventListener(id==="search"?"input":"change",render));
+
+function filterWorks(list) {
+  const type = $("type").value;
+  const genre = $("genre").value;
+  const year = $("year").value;
+
+  return list.filter(w => {
+    const matchType = !type || w.type === type;
+    const matchGenre = !genre || w.genre === genre;
+
+    let matchYear = true;
+    if (year === "old") {
+      matchYear = w.year > 0 && w.year < 1950;
+    } else if (year) {
+      const [a, b] = year.split("-").map(Number);
+      matchYear = w.year >= a && w.year <= b;
+    }
+
+    return matchType && matchGenre && matchYear;
+  });
+}
+
+async function render() {
+  const q = $("search").value.trim();
+  const requestId = ++searchRequest;
+
+  clearTimeout(searchTimer);
+
+  if (!q) {
+    renderCards(filterWorks([...works]));
+    return;
+  }
+
+  $("movies").innerHTML = "<p>جارٍ البحث عن الأعمال...</p>";
+  $("count").textContent = "جارٍ البحث...";
+
+  searchTimer = setTimeout(async () => {
+    try {
+      const response = await fetch(
+        API_URL + "?q=" + encodeURIComponent(q)
+      );
+
+      if (!response.ok) throw new Error("تعذر جلب النتائج");
+
+      const data = await response.json();
+
+      if (requestId !== searchRequest) return;
+
+      const results = (data.results || [])
+        .filter(item => item.media_type === "movie" || item.media_type === "tv")
+        .map(item => {
+          const isMovie = item.media_type === "movie";
+          const date = isMovie ? item.release_date : item.first_air_date;
+
+          return {
+            title: isMovie ? item.title : item.name,
+            en: isMovie
+              ? (item.original_title || "")
+              : (item.original_name || ""),
+            year: date ? Number(date.slice(0, 4)) : 0,
+            type: isMovie ? "فيلم" : "مسلسل",
+            genre: "أعمال TMDB",
+            rating: item.vote_average || 0,
+            icon: isMovie ? "🎬" : "📺"
+          };
+        });
+
+      renderCards(filterWorks(results));
+    } catch (error) {
+      if (requestId !== searchRequest) return;
+
+      $("count").textContent = "تعذر البحث";
+      $("movies").innerHTML =
+        '<p>تعذر الاتصال بقاعدة الأفلام. تحقق من الإنترنت وحاول مجددًا.</p>';
+    }
+  }, 300);
+}
+
+["search", "type", "genre", "year", "sort"].forEach(id => {
+  $(id).addEventListener(
+    id === "search" ? "input" : "change",
+    render
+  );
+});
+
 render();
+
 </script>
 </body>
 </html>
