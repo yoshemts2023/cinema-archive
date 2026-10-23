@@ -168,7 +168,11 @@ function renderCards(list) {
 
   $("movies").innerHTML = list.map(w => `
     <article class="card">
-      <div class="poster" aria-hidden="true">${w.icon || "🎬"}</div>
+  <div class="poster">
+  ${w.poster
+    ? `<img src="${w.poster}" alt="ملصق ${w.title}" loading="lazy" style="width:100%;height:100%;object-fit:cover;">`
+    : (w.icon || "🎬")}
+</div>
       <div class="card-body">
         <h3>${w.title}</h3>
         <div class="meta">${w.en || ""}
@@ -247,8 +251,11 @@ async function render() {
             year: date ? Number(date.slice(0, 4)) : 0,
             type: isMovie ? "فيلم" : "مسلسل",
             genre: "أعمال TMDB",
-            rating: item.vote_average || 0,
-            icon: isMovie ? "🎬" : "📺"
+           rating: item.vote_average || 0,
+icon: isMovie ? "🎬" : "📺",
+poster: item.poster_path
+  ? "https://image.tmdb.org/t/p/w500" + item.poster_path
+  : null
           };
         });
 
