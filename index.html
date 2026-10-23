@@ -158,12 +158,26 @@ let searchRequest = 0;
 
 function renderCards(list) {
   const sort = $("sort").value;
+const q = $("search").value.trim().toLowerCase();
+ list.sort((a, b) => {
+  if (q) {
+    const exactA = [a.title, a.en].some(
+      name => (name || "").toLowerCase() === q
+    );
+    const exactB = [b.title, b.en].some(
+      name => (name || "").toLowerCase() === q
+    );
 
-  if (sort === "new") list.sort((a, b) => b.year - a.year);
-  if (sort === "old") list.sort((a, b) => a.year - b.year);
-  if (sort === "az") list.sort((a, b) => a.title.localeCompare(b.title, "ar"));
-  if (sort === "rating") list.sort((a, b) => b.rating - a.rating);
+    if (exactA !== exactB) return exactA ? -1 : 1;
+  }
 
+  if (sort === "new") return b.year - a.year;
+  if (sort === "old") return a.year - b.year;
+  if (sort === "az") return a.title.localeCompare(b.title, "ar");
+  if (sort === "rating") return b.rating - a.rating;
+
+  return 0;
+});
   $("count").textContent = list.length + " عمل";
 
   $("movies").innerHTML = list.map(w => `
