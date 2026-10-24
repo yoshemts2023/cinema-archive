@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -231,10 +230,47 @@ async function render() {
 
   clearTimeout(searchTimer);
 
-  if (!q) {
-    renderCards(filterWorks([...works]));
-    return;
+ if (!q) {
+  $("movies").innerHTML = "<p>جارٍ تحميل مكتبة الأفلام...</p>";
+  $("count").textContent = "جارٍ التحميل...";
+
+  try {
+    const response = await fetch(
+      "https://flat-credit-f474cinema-archive-api.yoshemts2023.workers.dev/api/discover?page=1"
+    );
+
+    if (!response.ok) throw new Error("فشل تحميل الأفلام");
+
+    const data = await response.json();
+
+    if (requestId !== searchRequest) return;
+
+    const results = (data.results || []).map(item => ({
+      title: item.title || item.original_title || "بدون عنوان",
+      en: item.original_title || "",
+      year: item.release_date
+        ? Number(item.release_date.slice(0, 4))
+        : 0,
+      type: "فيلم",
+      genre: "أعمال TMDB",
+      rating: item.vote_average || 0,
+      icon: "🎬",
+      poster: item.poster_path
+        ? "https://image.tmdb.org/t/p/w500" + item.poster_path
+        : null
+    }));
+
+    renderCards(filterWorks(results));
+  } catch (error) {
+    if (requestId !== searchRequest) return;
+
+    $("count").textContent = "تعذر التحميل";
+    $("movies").innerHTML =
+      "<p>تعذر تحميل مكتبة الأفلام. حاول تحديث الصفحة.</p>";
   }
+
+  return;
+}
 
   $("movies").innerHTML = "<p>جارٍ البحث عن الأعمال...</p>";
   $("count").textContent = "جارٍ البحث...";
