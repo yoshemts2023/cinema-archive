@@ -221,8 +221,7 @@ function filterWorks(list) {
 
   return list.filter(w => {
     const matchType = !type || w.type === type;
-    const matchGenre = !genre || w.genre === genre;
-
+  const matchGenre = !genre || (w.genre || "").split("،").map(g => g.trim()).includes(genre);
     let matchYear = true;
     if (year === "old") {
       matchYear = w.year > 0 && w.year < 1950;
@@ -264,7 +263,12 @@ totalPages = Math.min(data.total_pages || 1, 500);
         ? Number(item.release_date.slice(0, 4))
         : 0,
       type: "فيلم",
-      genre: "أعمال TMDB",
+  genre: (item.genre_ids || []).map(id => ({
+  28:"أكشن", 12:"مغامرة", 16:"رسوم متحركة",
+  80:"جريمة", 18:"دراما", 14:"فانتازيا",
+  27:"رعب", 878:"خيال علمي", 53:"إثارة",
+  35:"كوميديا", 9648:"غموض", 10749:"رومانسي"
+}[id])).filter(Boolean).join("، ") || "غير مصنف",
       rating: item.vote_average || 0,
       icon: "🎬",
       poster: item.poster_path
